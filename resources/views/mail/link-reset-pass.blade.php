@@ -1,0 +1,1 @@
+<a href="{{ route('resetpass',['token' => $token]) }}">Reset Pass</a>
