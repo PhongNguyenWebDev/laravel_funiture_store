@@ -163,8 +163,7 @@
                                                         {{ $cart['quantity'] }}
                                                     </td>
                                                     <td>
-                                                        $
-                                                        {{ number_format($cart['price'] * $cart['quantity'], 2, '.', ',') }}
+                                                        ${{ number_format($cart['price'] * $cart['quantity'], 2, '.', ',') }}
                                                     </td>
                                                 </tr>
                                             @endforeach

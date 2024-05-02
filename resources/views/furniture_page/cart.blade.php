@@ -93,10 +93,13 @@
                                     @endforeach
                                 @else
                             <tbody>
-                                <h1 class="text-center">Cart empty! Please add product to cart</h1>
+                                @if (empty(session('cart')) || empty(session('cart')))
+                                    <h1 class="text-center">Cart empty! Please add product to cart</h1>
+                                @endif
                             </tbody>
+
                             @endif
-                            @if (session()->has('cart'))
+                            @if (session()->has('cart') && count(session()->get('cart')) > 0)
                                 <tr>
                                     <td>
                                         <input class="btn btn-outline-black btn-sm btn-block" type="submit"
@@ -109,7 +112,6 @@
                     </div>
                 </form>
             </div>
-
             <div class="row">
                 <div class="col-md-6">
                     <div class="row mb-5">
@@ -164,38 +166,31 @@
                                     <span class="text-black">FREE</span>
                                 </div>
                             </div>
-                            @if (session()->has('coupon'))
+                            @if (session()->has('coupon') && count(session()->get('cart')) > 0)
                                 <div class="row mb-3">
                                     <div class="col-md-4">
                                         <span class="text-black">Voucher</span>
                                     </div>
                                     @php
-                                        $coupon = Session::get('coupons');
+                                        $coupon = session('coupons');
+                                        $total = $subTotal;
+                                        if ($coupon['coupon_condition'] == 1) {
+                                            $total_coupon = $subTotal * (intval($coupon['coupon_number']) / 100);
+                                            $total -= $total_coupon;
+                                        } elseif ($coupon['coupon_condition'] == 2) {
+                                            $total -= intval($coupon['coupon_number']);
+                                        }
+                                        session(['total' => $total]);
                                     @endphp
                                     <div class="col-md-8 text-right">
-                                        @if ($coupon['coupon_condition'] == 1)
-                                            <span class="text-black">
+                                        <span class="text-black">
+                                            @if ($coupon['coupon_condition'] === 1)
                                                 {{ $coupon['coupon_number'] }}%
-                                                <p>
-                                                    @php
-                                                        $total_coupon =
-                                                            $subTotal * (intval($coupon['coupon_number']) / 100);
-                                                        $total = $subTotal - $total_coupon;
-                                                        session(['total' => $total]);
-                                                    @endphp
-                                                </p>
-                                            </span>
-                                        @elseif($coupon['coupon_condition'] == 2)
-                                            <span class="text-black">
-                                                ${{ $coupon['coupon_number'] }}
-                                                <p>
-                                                    @php
-                                                        $total = $subTotal - intval($coupon['coupon_number']);
-                                                        session(['total' => $total]);
-                                                    @endphp
-                                                </p>
-                                            </span>
-                                        @endif
+                                                <p>- ${{ number_format($total_coupon, 2, '.', ',') }}</p>
+                                            @elseif($coupon['coupon_condition'] === 2)
+                                                <p>${{ number_format(intval($coupon['coupon_number']), 2, '.', ',') }}</p>
+                                            @endif
+                                        </span>
                                     </div>
                                 </div>
                             @endif
@@ -205,11 +200,7 @@
                                 </div>
                                 <div class="col-md-8 text-right">
                                     <strong class="text-danger h5">
-                                        @if (session()->has('coupons'))
-                                            ${{ number_format($total = session()->get('total'), 2, '.', ',') }}
-                                        @else
-                                            ${{ number_format($subTotal, 2, '.', ',') }}
-                                        @endif
+                                        ${{ number_format(session('total', $subTotal), 2, '.', ',') }}
                                     </strong>
                                 </div>
                             </div>
